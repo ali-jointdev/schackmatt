@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Game, Square } from '../lib/game.library';
-import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
+
+import { NAW } from '../lib/NAW.library';
 
 @Component({
     selector: 'app-game',
@@ -8,7 +9,7 @@ import { listLazyRoutes } from '@angular/compiler/src/aot/lazy_routes';
     styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
-    private game: Game;
+    private game: NAW;
     private boardCanvas: any;
     private boardContext: any;
     private boardImage: any;
@@ -41,7 +42,8 @@ export class GameComponent implements OnInit {
     }[];
 
     constructor() {
-        this.game = new Game();
+        // this.game = new Game();
+        this.game = new NAW();
         this.CURSOR_DATA = {
             mouseOverBoard: false,
             currentMousePosition: {
@@ -65,6 +67,13 @@ export class GameComponent implements OnInit {
         };
         this.boardContext = this.boardCanvas.getContext('2d');
         this.pieceImages = [];
+
+        console.log('game play');
+        this.game.play();
+        console.log('game end');
+
+        // temporary return statement to stop draw errors
+        return;
 
         // doing pieces first
         const pieceSources = [
