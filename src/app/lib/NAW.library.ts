@@ -19,7 +19,7 @@ export const enum Units {
 export class NAW {
     public board: number[][];
     public pieces: number[][];
-    public turn: string;
+    public turn: number;
 
     constructor() {
         this.board = [
@@ -46,5 +46,16 @@ export class NAW {
 
     public play(): void {
         // play an instance of the game
+        const numberOfTurns = 10;
+        for (let i = 0; i < numberOfTurns; i++) {
+            this.nextTurn();
+        }
+    }
+
+    public nextTurn(): void {
+        // next turn
+        if (this.turn === 1) {
+            this.turn = 2;
+        }
     }
 }
