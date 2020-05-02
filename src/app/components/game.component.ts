@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Game, Square } from '../lib/game.library';
 
-import { NAW } from '../lib/NAW.library';
+import { NAW, Terrain } from '../lib/NAW.library';
 
 @Component({
     selector: 'app-game',
@@ -69,30 +69,23 @@ export class GameComponent implements OnInit {
         this.pieceImages = [];
 
         console.log('game play');
-        this.game.play();
+        // this.game.play();
         console.log('game end');
 
         // temporary return statement to stop draw errors
-        return;
 
         // doing pieces first
         const pieceSources = [
-            'w_King',
-            'w_Queen',
-            'w_Bishop',
-            'w_Knight',
-            'w_Rook',
-            'w_Pawn',
-            'b_King',
-            'b_Queen',
-            'b_Bishop',
-            'b_Knight',
-            'b_Rook',
-            'b_Pawn'
+            'infantryB',
+            'artilleryB',
+            'tankB',
+            'infantryA',
+            'artilleryA',
+            'tankA'
         ];
         for (const pieceSrc of pieceSources) {
             const pImg = new Image();
-            pImg.src = '../../assets/pieces/' + pieceSrc + '.png';
+            pImg.src = '../../assets/units/' + pieceSrc + '.png';
             this.pieceImages.push(pImg);
         }
 
@@ -103,182 +96,232 @@ export class GameComponent implements OnInit {
             this.drawBoard();
         };
 
-        // listeners
-        this.boardCanvas.addEventListener('mouseenter', () => {
-            this.CURSOR_DATA.mouseOverBoard = true;
-        });
-        this.boardCanvas.addEventListener('mouseleave', () => {
-            this.CURSOR_DATA.mouseOverBoard = false;
-            this.CURSOR_DATA.currentMousePosition = { x: -1, y: -1 };
-            this.CURSOR_DATA.overSquare = null;
-            this.tintSqObjects = [];
-            this.CURSOR_DATA.draggedPieceIndex = -1;
-            this.drawBoard();
-        });
-        this.boardCanvas.addEventListener('mousemove', (events: any) => {
-            if (this.CURSOR_DATA.mouseOverBoard) {
-                this.CURSOR_DATA.currentMousePosition = this.getMousePosition(
-                    events
-                );
-                let x = this.CURSOR_DATA.currentMousePosition.x;
-                let y = this.CURSOR_DATA.currentMousePosition.y;
-                x -= x % 80;
-                y -= y % 80;
-                x /= 80;
-                y /= 80;
-                if (
-                    this.CURSOR_DATA.overSquare === null ||
-                    this.CURSOR_DATA.overSquare.x !== x ||
-                    this.CURSOR_DATA.overSquare.y !== y
-                ) {
-                    // console.log('xy', x, y);
-                    // ooh tslint taught me shorthand
-                    this.CURSOR_DATA.overSquare = { x, y };
-                    this.showMoves();
-                }
-            }
-            this.drawBoard();
-        });
-        this.boardCanvas.addEventListener('mousedown', () => {
-            if (this.CURSOR_DATA.overSquare) {
-                this.CURSOR_DATA.mouseDownOn = this.CURSOR_DATA.overSquare;
-                this.CURSOR_DATA.dragging = true;
-            } else {
-                throw new Error('mouse down not over sq');
-            }
-        });
-        this.boardCanvas.addEventListener('mouseup', () => {
-            if (this.CURSOR_DATA.overSquare) {
-                this.CURSOR_DATA.mouseUpOn = this.CURSOR_DATA.overSquare;
-                this.CURSOR_DATA.dragging = false;
-                this.CURSOR_DATA.draggedPieceIndex = -1;
-                this.attemptMoveOnBoard();
-            } else {
-                throw new Error('mouse up not over sq');
-            }
-        });
+        return;
+        //     // listeners
+        //     this.boardCanvas.addEventListener('mouseenter', () => {
+        //         this.CURSOR_DATA.mouseOverBoard = true;
+        //     });
+        //     this.boardCanvas.addEventListener('mouseleave', () => {
+        //         this.CURSOR_DATA.mouseOverBoard = false;
+        //         this.CURSOR_DATA.currentMousePosition = { x: -1, y: -1 };
+        //         this.CURSOR_DATA.overSquare = null;
+        //         this.tintSqObjects = [];
+        //         this.CURSOR_DATA.draggedPieceIndex = -1;
+        //         this.drawBoard();
+        //     });
+        //     this.boardCanvas.addEventListener('mousemove', (events: any) => {
+        //         if (this.CURSOR_DATA.mouseOverBoard) {
+        //             this.CURSOR_DATA.currentMousePosition = this.getMousePosition(
+        //                 events
+        //             );
+        //             let x = this.CURSOR_DATA.currentMousePosition.x;
+        //             let y = this.CURSOR_DATA.currentMousePosition.y;
+        //             x -= x % 80;
+        //             y -= y % 80;
+        //             x /= 80;
+        //             y /= 80;
+        //             if (
+        //                 this.CURSOR_DATA.overSquare === null ||
+        //                 this.CURSOR_DATA.overSquare.x !== x ||
+        //                 this.CURSOR_DATA.overSquare.y !== y
+        //             ) {
+        //                 // console.log('xy', x, y);
+        //                 // ooh tslint taught me shorthand
+        //                 this.CURSOR_DATA.overSquare = { x, y };
+        //                 this.showMoves();
+        //             }
+        //         }
+        //         this.drawBoard();
+        //     });
+        //     this.boardCanvas.addEventListener('mousedown', () => {
+        //         if (this.CURSOR_DATA.overSquare) {
+        //             this.CURSOR_DATA.mouseDownOn = this.CURSOR_DATA.overSquare;
+        //             this.CURSOR_DATA.dragging = true;
+        //         } else {
+        //             throw new Error('mouse down not over sq');
+        //         }
+        //     });
+        //     this.boardCanvas.addEventListener('mouseup', () => {
+        //         if (this.CURSOR_DATA.overSquare) {
+        //             this.CURSOR_DATA.mouseUpOn = this.CURSOR_DATA.overSquare;
+        //             this.CURSOR_DATA.dragging = false;
+        //             this.CURSOR_DATA.draggedPieceIndex = -1;
+        //             this.attemptMoveOnBoard();
+        //         } else {
+        //             throw new Error('mouse up not over sq');
+        //         }
+        //     });
     }
 
-    showMoves(): void {
-        const pieceMovements = this.game.getPieceMovements();
-        const sq = {
-            file: this.CURSOR_DATA.overSquare.x,
-            rank: 7 - this.CURSOR_DATA.overSquare.y
-        };
-        this.tintSqObjects = [];
-        for (const movement of pieceMovements) {
-            // console.log('move', movement);
-            if (
-                movement.src.file === sq.file &&
-                movement.src.rank === sq.rank
-            ) {
-                // console.log('trigger');
-                this.tintSqObjects.push({
-                    dest: {
-                        file: movement.dest.file,
-                        rank: 7 - movement.dest.rank
-                    },
-                    color: 'green',
-                    gA: 0.01
-                });
-            }
-        }
-    }
+    // showMoves(): void {
+    //     const pieceMovements = this.game.getPieceMovements();
+    //     const sq = {
+    //         file: this.CURSOR_DATA.overSquare.x,
+    //         rank: 7 - this.CURSOR_DATA.overSquare.y
+    //     };
+    //     this.tintSqObjects = [];
+    //     for (const movement of pieceMovements) {
+    //         // console.log('move', movement);
+    //         if (
+    //             movement.src.file === sq.file &&
+    //             movement.src.rank === sq.rank
+    //         ) {
+    //             // console.log('trigger');
+    //             this.tintSqObjects.push({
+    //                 dest: {
+    //                     file: movement.dest.file,
+    //                     rank: 7 - movement.dest.rank
+    //                 },
+    //                 color: 'green',
+    //                 gA: 0.01
+    //             });
+    //         }
+    //     }
+    // }
 
-    attemptMoveOnBoard(): void {
-        // does not matter what the resulting board is here,
-        // we are just passing the src and dest
-        this.game.attemptMove({
-            src: {
-                file: this.CURSOR_DATA.mouseDownOn.x,
-                rank: 7 - this.CURSOR_DATA.mouseDownOn.y
-            },
-            dest: {
-                file: this.CURSOR_DATA.mouseUpOn.x,
-                rank: 7 - this.CURSOR_DATA.mouseUpOn.y
-            },
-            resultingBoard: null
-        });
-    }
+    // attemptMoveOnBoard(): void {
+    //     // does not matter what the resulting board is here,
+    //     // we are just passing the src and dest
+    //     this.game.attemptMove({
+    //         src: {
+    //             file: this.CURSOR_DATA.mouseDownOn.x,
+    //             rank: 7 - this.CURSOR_DATA.mouseDownOn.y
+    //         },
+    //         dest: {
+    //             file: this.CURSOR_DATA.mouseUpOn.x,
+    //             rank: 7 - this.CURSOR_DATA.mouseUpOn.y
+    //         },
+    //         resultingBoard: null
+    //     });
+    // }
 
-    getMousePosition(events: any): { x: number; y: number } {
-        let obj = this.boardCanvas;
-        let top = 0;
-        let left = 0;
-        let mX = 0;
-        let mY = 0;
-        while (obj && obj.tagName !== 'BODY') {
-            top += obj.offsetTop;
-            left += obj.offsetLeft;
-            obj = obj.offsetParent;
-        }
-        mX = events.clientX - left + window.pageXOffset;
-        mY = events.clientY - top + window.pageYOffset;
-        return { x: mX, y: mY };
-    }
+    // getMousePosition(events: any): { x: number; y: number } {
+    //     let obj = this.boardCanvas;
+    //     let top = 0;
+    //     let left = 0;
+    //     let mX = 0;
+    //     let mY = 0;
+    //     while (obj && obj.tagName !== 'BODY') {
+    //         top += obj.offsetTop;
+    //         left += obj.offsetLeft;
+    //         obj = obj.offsetParent;
+    //     }
+    //     mX = events.clientX - left + window.pageXOffset;
+    //     mY = events.clientY - top + window.pageYOffset;
+    //     return { x: mX, y: mY };
+    // }
 
     drawBoard(): void {
         this.boardContext.restore();
         this.boardContext.globalAlpha = 1;
         // this.boardContext.fillStyle = 'yellow';
         // this.boardContext.fillRect(0, 0, 40, 40);
-        this.boardContext.drawImage(this.boardImage, 0, 0);
+        // this.boardContext.drawImage(this.boardImage, 0, 0);
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
-                this.refreshCanvasSquare(i, j);
+                // this.refreshCanvasSquare(i, j);
+                switch (this.game.board[i][j]) {
+                    case Terrain.Flat:
+                        this.boardContext.fillStyle = '#05a805';
+                        this.boardContext.fillRect(
+                            (7 - j) * 80,
+                            i * 80,
+                            80,
+                            80
+                        );
+                        break;
+                    case Terrain.Water:
+                        this.boardContext.fillStyle = '#1c95ff';
+                        this.boardContext.fillRect(
+                            (7 - j) * 80,
+                            i * 80,
+                            80,
+                            80
+                        );
+                        break;
+                    case Terrain.Mountain:
+                        this.boardContext.fillStyle = '#d2d6d0';
+                        this.boardContext.fillRect(
+                            (7 - j) * 80,
+                            i * 80,
+                            80,
+                            80
+                        );
+                        break;
+                    case Terrain.Road:
+                        this.boardContext.fillStyle = '#555955';
+                        this.boardContext.fillRect(
+                            (7 - j) * 80,
+                            i * 80,
+                            80,
+                            80
+                        );
+                        break;
+                }
+                switch (this.game.pieces[i][j]) {
+                    case 0:
+                        break;
+                    default:
+                        this.boardContext.drawImage(
+                            this.pieceImages[this.game.pieces[i][j] - 1],
+                            (7 - j) * 80,
+                            i * 80
+                        );
+                        break;
+                }
             }
         }
-        if (this.CURSOR_DATA.draggedPieceIndex !== -1) {
-            this.boardContext.drawImage(
-                this.pieceImages[this.CURSOR_DATA.draggedPieceIndex],
-                this.CURSOR_DATA.currentMousePosition.x - 40,
-                this.CURSOR_DATA.currentMousePosition.y - 40
-            );
-        }
+        // if (this.CURSOR_DATA.draggedPieceIndex !== -1) {
+        //     this.boardContext.drawImage(
+        //         this.pieceImages[this.CURSOR_DATA.draggedPieceIndex],
+        //         this.CURSOR_DATA.currentMousePosition.x - 40,
+        //         this.CURSOR_DATA.currentMousePosition.y - 40
+        //     );
+        // }
     }
 
-    refreshCanvasSquare(x: number, y: number): void {
-        const piece = this.game.getPiece({ file: x, rank: y });
-        if (
-            this.CURSOR_DATA.overSquare &&
-            this.CURSOR_DATA.overSquare.x === x &&
-            this.CURSOR_DATA.overSquare.y === 7 - y
-        ) {
-            this.tintSquare(x, 7 - y, 'yellow', 0.5);
-            this.boardContext.globalAlpha = 1; // reset this to full
-        }
-        for (const tintSq of this.tintSqObjects) {
-            this.tintSquare(
-                tintSq.dest.file,
-                tintSq.dest.rank,
-                tintSq.color,
-                tintSq.gA
-            );
-        }
-        this.boardContext.globalAlpha = 1;
-        if (piece) {
-            const color = piece.color;
-            const pieceType = piece.type;
-            const index = (color ? 6 : 0) + pieceType;
-            if (
-                this.CURSOR_DATA.dragging &&
-                this.CURSOR_DATA.mouseDownOn.x === x &&
-                this.CURSOR_DATA.mouseDownOn.y === 7 - y
-            ) {
-                this.CURSOR_DATA.draggedPieceIndex = index;
-            } else {
-                this.boardContext.drawImage(
-                    this.pieceImages[index],
-                    x * 80,
-                    (7 - y) * 80
-                );
-            }
-        }
-    }
+    // refreshCanvasSquare(x: number, y: number): void {
+    //     const piece = this.game.getPiece({ file: x, rank: y });
+    //     if (
+    //         this.CURSOR_DATA.overSquare &&
+    //         this.CURSOR_DATA.overSquare.x === x &&
+    //         this.CURSOR_DATA.overSquare.y === 7 - y
+    //     ) {
+    //         this.tintSquare(x, 7 - y, 'yellow', 0.5);
+    //         this.boardContext.globalAlpha = 1; // reset this to full
+    //     }
+    //     for (const tintSq of this.tintSqObjects) {
+    //         this.tintSquare(
+    //             tintSq.dest.file,
+    //             tintSq.dest.rank,
+    //             tintSq.color,
+    //             tintSq.gA
+    //         );
+    //     }
+    //     this.boardContext.globalAlpha = 1;
+    //     if (piece) {
+    //         const color = piece.color;
+    //         const pieceType = piece.type;
+    //         const index = (color ? 6 : 0) + pieceType;
+    //         if (
+    //             this.CURSOR_DATA.dragging &&
+    //             this.CURSOR_DATA.mouseDownOn.x === x &&
+    //             this.CURSOR_DATA.mouseDownOn.y === 7 - y
+    //         ) {
+    //             this.CURSOR_DATA.draggedPieceIndex = index;
+    //         } else {
+    //             this.boardContext.drawImage(
+    //                 this.pieceImages[index],
+    //                 x * 80,
+    //                 (7 - y) * 80
+    //             );
+    //         }
+    //     }
+    // }
 
-    tintSquare(x: number, y: number, color: string, globalAlpha: number): void {
-        this.boardContext.globalAlpha = globalAlpha;
-        this.boardContext.fillStyle = color;
-        this.boardContext.fillRect(x * 80, y * 80, 80, 80);
-    }
+    // tintSquare(x: number, y: number, color: string, globalAlpha: number): void {
+    //     this.boardContext.globalAlpha = globalAlpha;
+    //     this.boardContext.fillStyle = color;
+    //     this.boardContext.fillRect(x * 80, y * 80, 80, 80);
+    // }
 }
