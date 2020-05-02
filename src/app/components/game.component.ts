@@ -68,10 +68,6 @@ export class GameComponent implements OnInit {
         this.boardContext = this.boardCanvas.getContext('2d');
         this.pieceImages = [];
 
-        console.log('game play');
-        // this.game.play();
-        console.log('game end');
-
         // temporary return statement to stop draw errors
 
         // doing pieces first
@@ -95,6 +91,10 @@ export class GameComponent implements OnInit {
         this.boardImage.onload = () => {
             this.drawBoard();
         };
+
+        console.log('game play');
+        this.play();
+        console.log('game end');
 
         return;
         //     // listeners
@@ -151,6 +151,22 @@ export class GameComponent implements OnInit {
         //             throw new Error('mouse up not over sq');
         //         }
         //     });
+    }
+
+    public play(): void {
+        // play an instance of the game
+        const numberOfTurns = 20;
+        let turns = 0;
+        // for (let i = 0; i < numberOfTurns; i++) {
+        const interval = setInterval(() => {
+            this.game.nextTurn();
+            this.drawBoard();
+            turns++;
+            if (turns >= numberOfTurns) {
+                clearInterval(interval);
+            }
+        }, 500);
+        // }
     }
 
     // showMoves(): void {
