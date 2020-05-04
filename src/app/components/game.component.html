@@ -1,7 +1,16 @@
 <div id="game">
     <canvas id="board" width="640" height="640">canvas</canvas>
-    <input type="button" (click)="[demoOneGame()]" value="Demo 1 Game" />
-    <input type="button" (click)="[demoTwo()]" value="Demo 100 Games" />
+    <div id="sidebar" style="float: right;">
+        <input type="button" (click)="[demoOneGame()]" value="Gen A 1 Game" />
+        <br />
+        <hr />
+        <br />
+        <input type="button" (click)="[demoTwo()]" value="Gen A 100 Games" />
+        <br />
+        <input type="button" (click)="[demoThree()]" value="Gen B 100 Games" />
+        <br />
+        <input type="button" (click)="[demoFour()]" value="Gen C 100 Games" />
+    </div>
     <div style="padding: 30px; background-color: azure;">
         <h6>win ratio :: {{ blueWins }} | {{ redWins }}</h6>
     </div>

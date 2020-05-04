@@ -148,10 +148,10 @@ export class NAW {
             return false;
         }
         if (two) {
-            console.log('blue wins!');
+            console.log('result: blue wins!');
             this.blueWins++;
         } else {
-            console.log('red wins!');
+            console.log('result: red wins!');
             this.redWins++;
         }
         return true;

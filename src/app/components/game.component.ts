@@ -159,17 +159,30 @@ export class GameComponent implements OnInit {
     }
 
     public demoOneGame(): void {
-        console.log('game play');
-        this.play(1, 50);
-        console.log('game end');
+        console.log('game start');
+        this.play(1, 500, 1, 1, 1);
     }
 
     public demoTwo(): void {
-        console.log('game play');
-        this.play(50, 0);
+        console.log('game start');
+        this.play(100, 1, 1, 1, 10);
+    }
+    public demoThree(): void {
+        console.log('game start');
+        this.play(100, 1, 1, 5, 3);
+    }
+    public demoFour(): void {
+        console.log('game start');
+        this.play(100, 1, 1, 10000, 1);
     }
 
-    public play(games: number, delay: number): void {
+    public play(
+        games: number,
+        delay: number,
+        cap1: number,
+        cap2: number,
+        ratio: number
+    ): void {
         console.log('playing games left: ', games);
         this.game.reset();
         // play an instance of the game
@@ -177,37 +190,39 @@ export class GameComponent implements OnInit {
         let turns = 0;
         // for (let i = 0; i < numberOfTurns; i++) {
         const interval = setInterval(() => {
-            this.game.nextTurn(1, 1, 1);
+            this.game.nextTurn(cap1, cap2, ratio);
             this.drawBoard();
             turns++;
             if (turns >= numberOfTurns || this.game.isOver()) {
                 clearInterval(interval);
                 if (games > 1) {
-                    this.play(games - 1, delay);
+                    this.play(games - 1, delay, cap1, cap2, ratio);
                 } else {
                     // print data
+                    setTimeout(() => {
+                        this.boardContext.fillStyle = 'white';
+                        this.boardContext.globalAlpha = 0.7;
+                        this.boardContext.fillRect(0, 0, 640, 640);
+                        console.log('game end');
+                        this.redWins = this.game.redWins;
+                        this.blueWins = this.game.blueWins;
+                        // console.log('', this.redWins, this.blueWins);
 
-                    this.boardContext.fillStyle = 'white';
-                    this.boardContext.globalAlpha = 0.7;
-                    this.boardContext.fillRect(0, 0, 640, 640);
-                    console.log('game end');
-                    this.redWins = this.game.redWins;
-                    this.blueWins = this.game.blueWins;
-                    // console.log('', this.redWins, this.blueWins);
-
-                    let max = 0;
-                    for (let i = 0; i < 8; i++) {
-                        for (let j = 0; j < 8; j++) {
-                            if (this.game.heatmap2[i][j] > max) {
-                                max = this.game.heatmap2[i][j];
-                            }
-                            if (this.game.heatmap1[i][j] > max) {
-                                max = this.game.heatmap1[i][j];
+                        let max = 0;
+                        for (let i = 0; i < 8; i++) {
+                            for (let j = 0; j < 8; j++) {
+                                if (this.game.heatmap2[i][j] > max) {
+                                    max = this.game.heatmap2[i][j];
+                                }
+                                if (this.game.heatmap1[i][j] > max) {
+                                    max = this.game.heatmap1[i][j];
+                                }
                             }
                         }
-                    }
-                    this.drawHeatmap(this.game.heatmap2, 'red', max);
-                    this.drawHeatmap(this.game.heatmap1, 'blue', max);
+
+                        this.drawHeatmap(this.game.heatmap2, 'red', max);
+                        this.drawHeatmap(this.game.heatmap1, 'blue', max);
+                    }, 2000);
                 }
             }
         }, delay);
@@ -281,7 +296,7 @@ export class GameComponent implements OnInit {
             for (let j = 0; j < 8; j++) {
                 this.boardContext.globalAlpha = hm[i][j] / max;
                 if (color === 'blue') {
-                    this.boardContext.globalAlpha /= 1.5;
+                    this.boardContext.globalAlpha /= 1.2;
                 }
                 this.boardContext.fillRect((7 - j) * 80, i * 80, 80, 80);
                 this.boardContext.globalAlpha = 1;
