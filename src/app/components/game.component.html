@@ -1,3 +1,8 @@
 <div id="game">
     <canvas id="board" width="640" height="640">canvas</canvas>
+    <input type="button" (click)="[demoOneGame()]" value="Demo 1 Game" />
+    <input type="button" (click)="[demoTwo()]" value="Demo 100 Games" />
+    <div style="padding: 30px; background-color: azure;">
+        <h6>win ratio :: {{ blueWins }} | {{ redWins }}</h6>
+    </div>
 </div>

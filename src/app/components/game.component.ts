@@ -9,6 +9,10 @@ import { NAW, Terrain } from '../lib/NAW.library';
     styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
+    public redWins: number;
+    public blueWins: number;
+    public mountainImage: any;
+
     private game: NAW;
     private boardCanvas: any;
     private boardContext: any;
@@ -43,6 +47,8 @@ export class GameComponent implements OnInit {
 
     constructor() {
         // this.game = new Game();
+        this.redWins = 0;
+        this.blueWins = 0;
         this.game = new NAW();
         this.CURSOR_DATA = {
             mouseOverBoard: false,
@@ -85,16 +91,15 @@ export class GameComponent implements OnInit {
             this.pieceImages.push(pImg);
         }
 
+        this.mountainImage = new Image();
+        this.mountainImage.src = '../../assets/mountain.png';
+
         this.boardImage = new Image();
         this.boardImage.src = '../../assets/board_640x640.png';
         // because apparently I have to wait on the image smh
         this.boardImage.onload = () => {
             this.drawBoard();
         };
-
-        console.log('game play');
-        this.play();
-        console.log('game end');
 
         return;
         //     // listeners
@@ -153,19 +158,59 @@ export class GameComponent implements OnInit {
         //     });
     }
 
-    public play(): void {
+    public demoOneGame(): void {
+        console.log('game play');
+        this.play(1, 50);
+        console.log('game end');
+    }
+
+    public demoTwo(): void {
+        console.log('game play');
+        this.play(50, 0);
+    }
+
+    public play(games: number, delay: number): void {
+        console.log('playing games left: ', games);
+        this.game.reset();
         // play an instance of the game
-        const numberOfTurns = 20;
+        const numberOfTurns = 500;
         let turns = 0;
         // for (let i = 0; i < numberOfTurns; i++) {
         const interval = setInterval(() => {
-            this.game.nextTurn();
+            this.game.nextTurn(1, 1, 1);
             this.drawBoard();
             turns++;
-            if (turns >= numberOfTurns) {
+            if (turns >= numberOfTurns || this.game.isOver()) {
                 clearInterval(interval);
+                if (games > 1) {
+                    this.play(games - 1, delay);
+                } else {
+                    // print data
+
+                    this.boardContext.fillStyle = 'white';
+                    this.boardContext.globalAlpha = 0.7;
+                    this.boardContext.fillRect(0, 0, 640, 640);
+                    console.log('game end');
+                    this.redWins = this.game.redWins;
+                    this.blueWins = this.game.blueWins;
+                    // console.log('', this.redWins, this.blueWins);
+
+                    let max = 0;
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            if (this.game.heatmap2[i][j] > max) {
+                                max = this.game.heatmap2[i][j];
+                            }
+                            if (this.game.heatmap1[i][j] > max) {
+                                max = this.game.heatmap1[i][j];
+                            }
+                        }
+                    }
+                    this.drawHeatmap(this.game.heatmap2, 'red', max);
+                    this.drawHeatmap(this.game.heatmap1, 'blue', max);
+                }
             }
-        }, 500);
+        }, delay);
         // }
     }
 
@@ -227,6 +272,23 @@ export class GameComponent implements OnInit {
     //     return { x: mX, y: mY };
     // }
 
+    drawHeatmap(hm: any, color: string, max: number): void {
+        this.boardContext.restore();
+        this.boardContext.globalAlpha = 1;
+        this.boardContext.fillStyle = color;
+
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                this.boardContext.globalAlpha = hm[i][j] / max;
+                if (color === 'blue') {
+                    this.boardContext.globalAlpha /= 1.5;
+                }
+                this.boardContext.fillRect((7 - j) * 80, i * 80, 80, 80);
+                this.boardContext.globalAlpha = 1;
+            }
+        }
+    }
+
     drawBoard(): void {
         this.boardContext.restore();
         this.boardContext.globalAlpha = 1;
@@ -256,13 +318,18 @@ export class GameComponent implements OnInit {
                         );
                         break;
                     case Terrain.Mountain:
-                        this.boardContext.fillStyle = '#d2d6d0';
+                        this.boardContext.fillStyle = '#473d21';
                         this.boardContext.fillRect(
                             (7 - j) * 80,
                             i * 80,
                             80,
                             80
                         );
+                        // this.boardContext.drawImage(
+                        //     this.mountainImage,
+                        //     (7 - j) * 80,
+                        //     i * 80 - 20
+                        // );
                         break;
                     case Terrain.Road:
                         this.boardContext.fillStyle = '#555955';
@@ -282,6 +349,20 @@ export class GameComponent implements OnInit {
                             this.pieceImages[this.game.pieces[i][j] - 1],
                             (7 - j) * 80,
                             i * 80
+                        );
+                        break;
+                }
+            }
+        }
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                // this.refreshCanvasSquare(i, j);
+                switch (this.game.board[i][j]) {
+                    case Terrain.Mountain:
+                        this.boardContext.drawImage(
+                            this.mountainImage,
+                            (7 - j) * 80,
+                            i * 80 - 40
                         );
                         break;
                 }

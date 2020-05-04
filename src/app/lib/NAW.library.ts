@@ -19,34 +19,46 @@ export const enum Units {
 export class NAW {
     public board: number[][];
     public pieces: number[][];
+    public heatmap1: number[][];
+    public heatmap2: number[][];
     public turn: number;
+    public redWins: number;
+    public blueWins: number;
+    public capValue1: number;
+    public capValue2: number;
+    public ratio: number;
 
     constructor() {
-        this.board = [
-            [2, 1, 0, 0, 0, 0, 1, 2],
-            [2, 0, 0, 0, 2, 2, 1, 2],
-            [2, 2, 2, 0, 0, 2, 2, 2],
-            [2, 1, 2, 0, 1, 2, 1, 2],
-            [2, 1, 2, 1, 0, 2, 1, 2],
-            [2, 2, 2, 0, 0, 2, 2, 2],
-            [2, 1, 2, 2, 0, 0, 0, 2],
-            [2, 1, 0, 0, 0, 0, 1, 2]
+        this.redWins = 0;
+        this.blueWins = 0;
+        this.heatmap1 = [
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]
         ];
-        this.pieces = [
-            [3, 0, 0, 0, 0, 0, 0, 6],
-            [2, 0, 0, 0, 0, 0, 0, 5],
-            [1, 0, 0, 0, 0, 0, 0, 4],
-            [1, 0, 0, 0, 0, 0, 0, 4],
-            [1, 0, 0, 0, 0, 0, 0, 4],
-            [1, 0, 0, 0, 0, 0, 0, 4],
-            [2, 0, 0, 0, 0, 0, 0, 5],
-            [3, 0, 0, 0, 0, 0, 0, 6]
+        this.heatmap2 = [
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]
         ];
-        this.turn = 1;
+        this.reset();
     }
 
-    public nextTurn(): void {
-        console.log('turn', this.turn);
+    public nextTurn(cap1: number, cap2: number, ratio: number): void {
+        this.capValue1 = cap1;
+        this.capValue2 = cap2;
+        this.ratio = ratio;
+        // console.log('turn', this.turn);
         // next turn
         const sources = [];
         for (let i = 0; i < 8; i++) {
@@ -87,6 +99,64 @@ export class NAW {
         this.turn++;
     }
 
+    public reset(): void {
+        this.board = [
+            [2, 1, 0, 0, 0, 0, 1, 2],
+            [2, 0, 0, 0, 2, 2, 1, 2],
+            [2, 2, 2, 0, 0, 2, 2, 2],
+            [2, 1, 2, 0, 1, 2, 1, 2],
+            [2, 1, 2, 1, 0, 2, 1, 2],
+            [2, 2, 2, 0, 0, 2, 2, 2],
+            [2, 1, 2, 2, 0, 0, 0, 2],
+            [2, 1, 0, 0, 0, 0, 1, 2]
+        ];
+        this.pieces = [
+            [3, 0, 0, 0, 0, 0, 0, 6],
+            [2, 0, 0, 0, 0, 0, 0, 5],
+            [1, 0, 0, 0, 0, 0, 0, 4],
+            [1, 0, 0, 0, 0, 0, 0, 4],
+            [1, 0, 0, 0, 0, 0, 0, 4],
+            [1, 0, 0, 0, 0, 0, 0, 4],
+            [2, 0, 0, 0, 0, 0, 0, 5],
+            [3, 0, 0, 0, 0, 0, 0, 6]
+        ];
+        this.turn = 1;
+    }
+
+    public isOver(): boolean {
+        let one = false;
+        let two = false;
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                if (
+                    this.pieces[i][j] === 1 ||
+                    this.pieces[i][j] === 2 ||
+                    this.pieces[i][j] === 3
+                ) {
+                    one = true;
+                }
+                if (
+                    this.pieces[i][j] === 4 ||
+                    this.pieces[i][j] === 5 ||
+                    this.pieces[i][j] === 6
+                ) {
+                    two = true;
+                }
+            }
+        }
+        if (one && two) {
+            return false;
+        }
+        if (two) {
+            console.log('blue wins!');
+            this.blueWins++;
+        } else {
+            console.log('red wins!');
+            this.redWins++;
+        }
+        return true;
+    }
+
     private infantry1(src: any, movementsLeft: number): void {
         // console.log('infantry 1', src);
         const dests = this.getAdjacentSqs(src);
@@ -105,34 +175,24 @@ export class NAW {
                 options.push(d);
                 // incentivize center
                 if ((d.i === 4 || d.i === 3) && (d.j === 4 || d.j === 3)) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue1; iter++) {
+                        options.push(d);
+                    }
                 }
                 if (d.i >= 2 && d.i <= 5 && d.j >= 2 && d.j <= 5) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue1; iter++) {
+                        options.push(d);
+                    }
                 }
                 // incentivize capture
                 if (this.pieces[d.i][d.j] !== Units.None) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (
+                        let iter = 0;
+                        iter < this.capValue1 * this.ratio;
+                        iter++
+                    ) {
+                        options.push(d);
+                    }
                 }
             }
         }
@@ -140,6 +200,9 @@ export class NAW {
         if (options.length > 0) {
             const indexChoice = Math.floor(Math.random() * options.length);
             const choice = options[indexChoice];
+            if (this.pieces[choice.i][choice.j] !== Units.None) {
+                this.heatmap1[choice.i][choice.j] += 1;
+            }
             this.pieces[choice.i][choice.j] = this.pieces[src.i][src.j];
             this.pieces[src.i][src.j] = Units.None;
             if (this.board[choice.i][choice.j] === Terrain.Flat) {
@@ -169,34 +232,24 @@ export class NAW {
                 options.push(d);
                 // incentivize center
                 if ((d.i === 4 || d.i === 3) && (d.j === 4 || d.j === 3)) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue1; iter++) {
+                        options.push(d);
+                    }
                 }
                 if (d.i >= 2 && d.i <= 5 && d.j >= 2 && d.j <= 5) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue1; iter++) {
+                        options.push(d);
+                    }
                 }
                 // incentivize capture
                 if (this.pieces[d.i][d.j] !== Units.None) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (
+                        let iter = 0;
+                        iter < this.capValue1 * this.ratio;
+                        iter++
+                    ) {
+                        options.push(d);
+                    }
                 }
             }
         }
@@ -204,6 +257,9 @@ export class NAW {
         if (options.length > 0) {
             const indexChoice = Math.floor(Math.random() * options.length);
             const choice = options[indexChoice];
+            if (this.pieces[choice.i][choice.j] !== Units.None) {
+                this.heatmap1[choice.i][choice.j] += 1;
+            }
             this.pieces[choice.i][choice.j] = this.pieces[src.i][src.j];
             this.pieces[src.i][src.j] = Units.None;
             if (this.board[choice.i][choice.j] === Terrain.Flat) {
@@ -233,34 +289,24 @@ export class NAW {
                 options.push(d);
                 // incentivize center
                 if ((d.i === 4 || d.i === 3) && (d.j === 4 || d.j === 3)) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue1; iter++) {
+                        options.push(d);
+                    }
                 }
                 if (d.i >= 2 && d.i <= 5 && d.j >= 2 && d.j <= 5) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue1; iter++) {
+                        options.push(d);
+                    }
                 }
                 // incentivize capture
                 if (this.pieces[d.i][d.j] !== Units.None) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (
+                        let iter = 0;
+                        iter < this.capValue1 * this.ratio;
+                        iter++
+                    ) {
+                        options.push(d);
+                    }
                 }
             }
         }
@@ -268,6 +314,9 @@ export class NAW {
         if (options.length > 0) {
             const indexChoice = Math.floor(Math.random() * options.length);
             const choice = options[indexChoice];
+            if (this.pieces[choice.i][choice.j] !== Units.None) {
+                this.heatmap1[choice.i][choice.j] += 1;
+            }
             this.pieces[choice.i][choice.j] = this.pieces[src.i][src.j];
             this.pieces[src.i][src.j] = Units.None;
             if (this.board[choice.i][choice.j] === Terrain.Flat) {
@@ -298,40 +347,33 @@ export class NAW {
                 options.push(d);
                 // incentivize center
                 if ((d.i === 4 || d.i === 3) && (d.j === 4 || d.j === 3)) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue2; iter++) {
+                        options.push(d);
+                    }
                 }
                 if (d.i >= 2 && d.i <= 5 && d.j >= 2 && d.j <= 5) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue2; iter++) {
+                        options.push(d);
+                    }
                 }
                 // incentivize capture
                 if (this.pieces[d.i][d.j] !== Units.None) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (
+                        let iter = 0;
+                        iter < this.capValue2 * this.ratio;
+                        iter++
+                    ) {
+                        options.push(d);
+                    }
                 }
             }
         }
         if (options.length > 0) {
             const indexChoice = Math.floor(Math.random() * options.length);
             const choice = options[indexChoice];
+            if (this.pieces[choice.i][choice.j] !== Units.None) {
+                this.heatmap2[choice.i][choice.j] += 1;
+            }
             this.pieces[choice.i][choice.j] = this.pieces[src.i][src.j];
             this.pieces[src.i][src.j] = Units.None;
             if (this.board[choice.i][choice.j] === Terrain.Flat) {
@@ -361,40 +403,33 @@ export class NAW {
                 options.push(d);
                 // incentivize center
                 if ((d.i === 4 || d.i === 3) && (d.j === 4 || d.j === 3)) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue2; iter++) {
+                        options.push(d);
+                    }
                 }
                 if (d.i >= 2 && d.i <= 5 && d.j >= 2 && d.j <= 5) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue2; iter++) {
+                        options.push(d);
+                    }
                 }
                 // incentivize capture
                 if (this.pieces[d.i][d.j] !== Units.None) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (
+                        let iter = 0;
+                        iter < this.capValue2 * this.ratio;
+                        iter++
+                    ) {
+                        options.push(d);
+                    }
                 }
             }
         }
         if (options.length > 0) {
             const indexChoice = Math.floor(Math.random() * options.length);
             const choice = options[indexChoice];
+            if (this.pieces[choice.i][choice.j] !== Units.None) {
+                this.heatmap2[choice.i][choice.j] += 1;
+            }
             this.pieces[choice.i][choice.j] = this.pieces[src.i][src.j];
             this.pieces[src.i][src.j] = Units.None;
             if (this.board[choice.i][choice.j] === Terrain.Flat) {
@@ -424,40 +459,33 @@ export class NAW {
                 options.push(d);
                 // incentivize center
                 if ((d.i === 4 || d.i === 3) && (d.j === 4 || d.j === 3)) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue2; iter++) {
+                        options.push(d);
+                    }
                 }
                 if (d.i >= 2 && d.i <= 5 && d.j >= 2 && d.j <= 5) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (let iter = 0; iter < this.capValue2; iter++) {
+                        options.push(d);
+                    }
                 }
                 // incentivize capture
                 if (this.pieces[d.i][d.j] !== Units.None) {
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
-                    options.push(d);
+                    for (
+                        let iter = 0;
+                        iter < this.capValue2 * this.ratio;
+                        iter++
+                    ) {
+                        options.push(d);
+                    }
                 }
             }
         }
         if (options.length > 0) {
             const indexChoice = Math.floor(Math.random() * options.length);
             const choice = options[indexChoice];
+            if (this.pieces[choice.i][choice.j] !== Units.None) {
+                this.heatmap2[choice.i][choice.j] += 1;
+            }
             this.pieces[choice.i][choice.j] = this.pieces[src.i][src.j];
             this.pieces[src.i][src.j] = Units.None;
             if (this.board[choice.i][choice.j] === Terrain.Flat) {
